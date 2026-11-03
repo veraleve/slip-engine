@@ -28,4 +28,6 @@ jobs:
 
       - name: Run Pytest
         run: |
-          pytest tests/
+          python -m pytest tests/
+        env:
+          PYTHONPATH: .

@@ -1,8 +1,6 @@
 import logging
 from typing import List, Dict, Any
 import numpy as np
-import torch
-from sentence_transformers import SentenceTransformer
 from .config import EngineConfig
 
 logger = logging.getLogger(__name__)
@@ -14,6 +12,9 @@ class SlipEmbedder:
     """
 
     def __init__(self, model_name: str = EngineConfig.MODEL_NAME):
+        import torch
+        from sentence_transformers import SentenceTransformer
+
         self.device = "cpu"
         # Optimize CPU threads for Kaggle 4-core instances
         torch.set_num_threads(4)
