@@ -2,6 +2,7 @@ import logging
 from typing import List, Dict, Any
 import numpy as np
 from .config import EngineConfig
+from .gate_syllabus import format_slip_embedding_prompt
 
 logger = logging.getLogger(__name__)
 
@@ -22,10 +23,22 @@ class SlipEmbedder:
         self.model = SentenceTransformer(model_name, device=self.device)
         logger.info("Model loaded successfully.")
 
-    def format_slip_text(self, topic: str, subtopic: str, trap_statement: str) -> str:
-        """Formats metadata and blunder description into an optimal embedding prompt."""
-        sub = f" - {subtopic}" if subtopic else ""
-        return f"Topic: {topic}{sub}. Trap: {trap_statement}"
+    def format_slip_text(
+        self,
+        exam_tag: str,
+        topic: str,
+        subtopic: str,
+        trap_statement: str,
+        fix_statement: str = ""
+    ) -> str:
+        """Formats metadata and blunder description into an optimal syllabus-aware embedding prompt."""
+        return format_slip_embedding_prompt(
+            exam_tag=exam_tag,
+            topic=topic,
+            subtopic=subtopic,
+            trap_statement=trap_statement,
+            fix_statement=fix_statement
+        )
 
     def encode_slips(self, slips: List[Dict[str, Any]]) -> np.ndarray:
         """Encodes a list of slip dictionaries into normalized 768-dim numpy embeddings."""
@@ -34,14 +47,16 @@ class SlipEmbedder:
 
         texts = [
             self.format_slip_text(
-                s.get("topic", "General"),
-                s.get("subtopic", ""),
-                s.get("trap_statement", "")
+                exam_tag=s.get("exam_tag", "GATE"),
+                topic=s.get("topic", "General"),
+                subtopic=s.get("subtopic", ""),
+                trap_statement=s.get("trap_statement", ""),
+                fix_statement=s.get("fix_statement", "")
             )
             for s in slips
         ]
 
-        logger.info(f"Encoding {len(texts)} slips on CPU...")
+        logger.info(f"Encoding {len(texts)} slips on CPU with syllabus context...")
         embeddings = self.model.encode(
             texts,
             batch_size=EngineConfig.BATCH_SIZE,
