@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: slip-engine-api
+    env: python
+    region: singapore
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn render_api.main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: SUPABASE_URL
+        value: https://grydnpgufybxvmovdumg.supabase.co
+      - key: SUPABASE_KEY
+        sync: false
